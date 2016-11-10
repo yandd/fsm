@@ -1,12 +1,12 @@
 FSM - Finite-state machine
 ===========================
 
-# usage
+## usage
 ```sh
 go get github.com/yandd/fsm
 ```
 
-# example
+## example
 
 ```go
 f, err := NewFSM(nil, []interface{}{}, FSMEvents{
