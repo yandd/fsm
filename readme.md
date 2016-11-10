@@ -1,6 +1,11 @@
 FSM - Finite-state machine
 ===========================
 
+# usage
+```sh
+go get github.com/yandd/fsm
+```
+
 # example
 
 ```go
