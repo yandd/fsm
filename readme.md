@@ -10,7 +10,7 @@ go get github.com/yandd/fsm
 ![fsm](fsm.png)
 
 ```go
-f, err := NewFSM("inited", []interface{}{"ended"}, FSMEvents{
+f, err := fsm.NewFSM("inited", []interface{}{"ended"}, fsm.FSMEvents{
 	{Name: "start", From: "inited", To: "started"},
 	{Name: "work", From: "started", To: "working"},
 	{Name: "end", From: []interface{}{"started", "working"}, To: "ended"},
