@@ -1,4 +1,4 @@
-FSM - Finite-state machine
+FSM - Finite state machine in Go
 ===========================
 
 ## usage
