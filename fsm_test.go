@@ -31,5 +31,7 @@ func TestNextState(t *testing.T) {
 	next, err := NextState(f, "started", "work")
 	log.Println(f.Graph())
 	log.Println(next, err)
+
+	log.Println(f.Dot("test"))
 }
 
