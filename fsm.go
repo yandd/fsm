@@ -206,7 +206,12 @@ digraph %s {
 	for a, _ := range f.accepts {
 		buf.WriteString(fmt.Sprintf("%v ", a))
 	}
-	buf.WriteString(";\n	node [shape = circle];\n\n")
+
+	if len(f.accepts) > 0 {
+		buf.WriteString(";")
+	}
+
+	buf.WriteString("\n	node [shape = circle];\n\n")
 
 	events := FSMEvents{}
 
