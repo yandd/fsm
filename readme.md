@@ -23,7 +23,7 @@ f.Dot("diag_name")
 ```
 
 ```dot
-digraph test {
+digraph diag_name {
 	rankdir=LR;
 	node [shape = doublecircle];ended ;
 	node [shape = circle];
