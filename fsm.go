@@ -1,10 +1,12 @@
 package fsm
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
 	"sync"
+	"sort"
 )
 
 var (
@@ -15,6 +17,10 @@ var (
 	ErrFSMStateInEventNotFound = errors.New("<FSM> state in event not found")
 )
 
+type Comparator interface {
+	Compare(interface{}) int
+}
+
 type FSMEvent struct {
 	Name interface{}
 	From interface{}
@@ -22,6 +28,32 @@ type FSMEvent struct {
 }
 
 type FSMEvents []FSMEvent
+
+func (e FSMEvents) Len() int           { return len(e) }
+func (e FSMEvents) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
+func (e FSMEvents) Less(i, j int) bool {
+	_, nameOk := e[i].Name.(Comparator);
+	_, fromOk := e[i].From.(Comparator);
+	_, toOk := e[i].To.(Comparator);
+
+	if nameOk && e[i].Name.(Comparator).Compare(e[j].Name) < 0 {
+		return true
+	} else if !nameOk || (nameOk && e[i].Name.(Comparator).Compare(e[j].Name) == 0) {
+		if fromOk && e[i].From.(Comparator).Compare(e[j].From) < 0 {
+			return true
+		} else if fromOk && e[i].From.(Comparator).Compare(e[j].From) == 0 {
+			if toOk && e[i].To.(Comparator).Compare(e[j].To) < 0 {
+				return true
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}
 
 type FSMGraph map[interface{}]map[interface{}]interface{}
 
@@ -158,6 +190,49 @@ func (f *FSM) Graph() FSMGraph {
 	defer f.mutex.RUnlock()
 
 	return f.graph
+}
+
+func (f *FSM) Dot(name string) string {
+	f.mutex.RLock()
+	defer f.mutex.RUnlock()
+
+	buf := bytes.Buffer{}
+
+	buf.WriteString(fmt.Sprintf(`
+digraph %s {
+	rankdir=LR;
+	node [shape = doublecircle];`, name))
+
+	for a, _ := range f.accepts {
+		buf.WriteString(fmt.Sprintf("%v ", a))
+	}
+	buf.WriteString(";\n	node [shape = circle];\n\n")
+
+	events := FSMEvents{}
+
+	for e, s := range f.graph {
+		for curr, next := range s {
+			events = append(events, FSMEvent{e, curr, next})
+			//buf.WriteString(fmt.Sprintf("	%v -> %v [ label = \"%v\" ];\n", curr, next, e))
+		}
+	}
+
+	if len(events) > 0 {
+		_, nameOk := events[0].Name.(Comparator);
+		_, fromOk := events[0].From.(Comparator);
+
+		if nameOk || fromOk {
+			sort.Sort(events)
+		}
+	}
+
+	for _, e := range events {
+		buf.WriteString(fmt.Sprintf("	%v -> %v [ label = \"%v\" ];\n", e.From, e.To, e.Name))
+	}
+
+	buf.WriteString("}\n")
+
+	return buf.String()
 }
 
 func NextState(f *FSM, currState interface{}, evName interface{}) (interface{}, error) {

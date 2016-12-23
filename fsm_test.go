@@ -32,3 +32,4 @@ func TestNextState(t *testing.T) {
 	log.Println(f.Graph())
 	log.Println(next, err)
 }
+
